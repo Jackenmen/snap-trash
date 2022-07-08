@@ -1,0 +1,43 @@
+name: jack1142-trash
+summary: Command line interface to the freedesktop.org trashcan.
+description: >
+  This package provides a command line interface trashcan utility compliant with
+  the FreeDesktop.org Trash Specification. It remembers the name, original path,
+  deletion date, and permissions of each trashed file
+adopt-info: trash-cli
+grade: stable
+confinement: classic
+base: core22
+architectures:
+  - build-on: [arm64, armhf, amd64]
+
+apps:
+  trash:
+    command: bin/trash
+  # The actual commands are prefixed with `trash-` but this way
+  # the created binaries look like `trash.empty` rather than `trash.trash-empty`
+  empty:
+    command: bin/trash-empty
+  list:
+    command: bin/trash-list
+  put:
+    command: bin/trash-put
+  restore:
+    command: bin/trash-restore
+  rm:
+    command: bin/trash-rm
+
+parts:
+  trash-cli:
+    plugin: python
+    source: .
+    # To stage Python in classic mode, we need to add base python3- packages here.
+    # `python3-venv` depends on the minimal Python which is all that we require.
+    stage-packages:
+      - python3-venv
+    python-packages:
+      - trash-cli
+    override-build: |
+      snapcraftctl build
+      version=$(python3 -c 'from trashcli import trash; print(trash.version)')
+      snapcraftctl set-version "$version"
